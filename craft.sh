@@ -11,7 +11,6 @@ KERNEL_VERSION=""
 ARCH=arm64
 PROCS=8
 LINKER=ld.lld
-zipn="${DEVICE_NAME}-${KERNEL_VERSION}" # Nama file zip
 # --------------------------
 
 # --- Check for empty variables ---
@@ -80,6 +79,15 @@ zip_kernel() {
     fi
     cp "$kernel_image" ./AnyKernel3
     cd ./AnyKernel3
+
+    # --- Membuat nama file zip ---
+    tanggalbuild=$(date +%Y%m%d)  # Format tanggal YYYYMMDD
+    nomorbuild=$(date +%H%M)     # Format nomor build HHMM
+
+    zipn="${DEVICE_NAME}-${KERNEL_VERSION}-${tanggalbuild}-${nomorbuild}"
+
+    # -----------------------------
+
     zip -r9 "${zipn}".zip * -x .git README.md *placeholder
     cd ..
     export checksum=$(sha512sum ./AnyKernel3/"${zipn}".zip | cut -f1 -d ' ')
