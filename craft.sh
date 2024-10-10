@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # --- User Configuration ---
-TELEGRAM_BOT_TOKEN=""
-TELEGRAM_CHAT_ID=""
-DEVICE_NAME=""
-KERNEL_VERSION=""
+TELEGRAM_BOT_TOKEN="" # Your Bot Token from BotFather
+TELEGRAM_CHAT_ID="" # Your Group Chat ID
+DEVICE_NAME="" # Your Device Codename, ex: merlinx, lancelot
+KERNEL_VERSION="" # Your Kernel Name, ex: Fearless, Atomic
 # --------------------------
 
 # --- Script Configuration ---
@@ -97,18 +97,10 @@ send_to_telegram() {
   curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
     -F chat_id="${TELEGRAM_CHAT_ID}" \
     -F document="@${file_path}" \
-    -F caption="${KERNEL_VERSION} Successfully built!"
+    -F caption="${KERNEL_VERSION} Successfully build!"
 }
 
-# --- Function to send error message to Telegram ---
-send_error_message() {
-  curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
-    -F chat_id="${TELEGRAM_CHAT_ID}" \
-    -F document="@./out/build.log" \
-    -F caption="An error occurred during compilation. Please check the build log."
-}
-
-send_to_telegram() {
+send_log_telegram() {
   local file_path="$1"
   curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
     -F chat_id="${TELEGRAM_CHAT_ID}" \
@@ -131,7 +123,9 @@ send_start_message() {
   "
   curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
     -d chat_id="${TELEGRAM_CHAT_ID}" \
-    -d text="${message}"
+    -d text="${message}" \
+    -o /dev/null \
+     -w "" >/dev/null 2>&1
 }
 
 # --- Function to compile the kernel ---
@@ -215,6 +209,8 @@ compile_kernel() {
 
     # Send the kernel to Telegram
     send_to_telegram "./out/target/${zip_name}"
+
+    send_log_telegram "./out/build.log"
   fi
 }
 
