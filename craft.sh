@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # --- User Configuration ---
-TELEGRAM_BOT_TOKEN="YOUR_BOT_TOKEN_HERE"
-TELEGRAM_CHAT_ID="YOUR_CHAT_ID_HERE"
-DEVICE_NAME="YOUR_DEVICE_NAME"
-KERNEL_VERSION="YOUR_KERNEL_VERSION"
+TELEGRAM_BOT_TOKEN=""
+TELEGRAM_CHAT_ID=""
+DEVICE_NAME=""
+KERNEL_VERSION=""
 # --------------------------
 
 # --- Script Configuration ---
@@ -127,7 +127,7 @@ compile_kernel() {
     export CROSS_COMPILE_ARM32="arm-linux-gnueabi-"
     export CROSS_COMPILE_COMPAT="arm-linux-gnueabi-"
     export CROSS_COMPILE="aarch64-linux-gnu-"
-    export PATH="$PATH:$(pwd)/clang/bin"
+    export PATH="${PWD}/clang/bin:${PATH}"
 
     # Call the show_defconfigs function
     show_defconfigs
@@ -141,7 +141,6 @@ compile_kernel() {
         LD="${LINKER}" \
         AR=llvm-ar \
         AS=llvm-as \
-        NM=objdump \
         OBJDUMP=llvm-objdump \
         STRIP=llvm-strip \
         CC="clang" \
