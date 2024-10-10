@@ -1,12 +1,13 @@
 #!/bin/bash
 
-# Definisikan variabel warna
+# Define color variables
 RED='\033[0;31m'
 NOCOLOR='\033[0m'
 LIGHTCYAN='\033[1;36m'
+LIGHTGREEN='\033[1;32m'
 
-# Pastikan variabel ARCH, PROCS, BUILDER, BUILD_HOST, localversion, dan LINKER sudah didefinisikan
-# Contoh:
+# Make sure ARCH, PROCS, BUILDER, BUILD_HOST, localversion, and LINKER variables are defined
+# Example:
 export ARCH=arm64
 export PROCS=8
 export BUILDER="your_username"
@@ -14,6 +15,60 @@ export BUILD_HOST="your_hostname"
 export localversion="-test"
 export LINKER="ld.lld"
 
+# Function to display the list of defconfigs and select one
+show_defconfigs() {
+    local defconfig_path="./arch/${ARCH}/configs"
+
+    # Check if folder exists
+    if [ ! -d "$defconfig_path" ]; then
+        echo -e "${RED}FATAL:${NOCOLOR} Seems not a valid Kernel linux"
+        exit 2
+    fi
+
+    echo -e "Available defconfigs:\n"
+
+    # List defconfigs and assign them to an array
+    local defconfigs=($(ls "$defconfig_path"))
+
+    # Display enumerated defconfigs
+    for ((i=0; i<${#defconfigs[@]}; i++)); do
+        echo -e "${LIGHTCYAN}$i: ${defconfigs[i]}${NOCOLOR}"
+    done
+
+    echo ""
+    read -p "Select the defconfig you want to process: " choice
+
+    # Check if the choice is within the range of files
+    if [ "$choice" -ge 0 ] && [ "$choice" -lt ${#defconfigs[@]} ]; then
+        DEFCONFIG="${defconfigs[choice]}"
+        echo "Selected defconfig: $DEFCONFIG"
+    else
+        echo -e "${RED}error:${NOCOLOR} Invalid choice"
+        exit 1
+    fi
+}
+
+# Function to regenerate defconfig
+regen_defconfig() {
+    show_defconfigs
+    make O=out ARCH=${ARCH} ${DEFCONFIG}
+    cp -rf ./out/.config ./arch/${ARCH}/configs/${DEFCONFIG}
+    echo -e "${LIGHTGREEN}Defconfig ${DEFCONFIG} successfully regenerated.${NOCOLOR}"
+}
+
+# Function to open menuconfig and save defconfig
+open_menuconfig() {
+    show_defconfigs
+    make O=out ARCH=${ARCH} ${DEFCONFIG}
+    echo -e "${LIGHTGREEN}Note: Make sure you save the config with name '.config'"    
+    echo -e "      else the defconfig will not saved automatically.${NOCOLOR}"
+
+    make O=out menuconfig
+    cp -rf ./out/.config ./arch/${ARCH}/configs/${DEFCONFIG}
+    echo -e "${LIGHTGREEN}Defconfig ${DEFCONFIG} successfully saved.${NOCOLOR}"
+}
+
+# Function to compile the kernel
 compile_kernel() {
     # Check if necessary packages are installed
     if ! command -v bc &> /dev/null; then
@@ -59,7 +114,7 @@ compile_kernel() {
     export CROSS_COMPILE="aarch64-linux-gnu-"
     export PATH="$PATH:$(pwd)/clang/bin"
 
-    # Memanggil fungsi show_defconfigs
+    # Call the show_defconfigs function
     show_defconfigs
 
     make O=out ARCH=${ARCH} ${DEFCONFIG}
@@ -92,46 +147,31 @@ compile_kernel() {
         # Zip the build log
         zip -r out/error.log.zip out/build.log
 
-        # Meminta input bot token dan chat ID
-        read -p "Masukkan Bot Token Telegram: " BOT_TOKEN
-        read -p "Masukkan Chat ID Telegram: " CHAT_ID
+        # Ask for Telegram bot token and chat ID
+        read -p "Enter your Telegram Bot Token: " BOT_TOKEN
+        read -p "Enter your Telegram Chat ID: " CHAT_ID
 
         # Send the zipped log to Telegram
         curl -F "chat_id=${CHAT_ID}" -F "document=@out/error.log.zip" "https://api.telegram.org/bot${BOT_TOKEN}/sendDocument"
     fi
 }
 
-show_defconfigs() {
-    local defconfig_path="./arch/${ARCH}/configs"
+# Display option menu
+echo -e "
+${LIGHTCYAN}Kernel Build Script${NOCOLOR}
 
-    # Check if folder exists
-    if [ ! -d "$defconfig_path" ]; then
-        echo -e "${RED}FATAL:${NOCOLOR} Seems not a valid Kernel linux"
-        exit 2
-    fi
+1. Regenerate defconfig
+2. Open menuconfig
+3. Compile kernel
+4. Exit
+"
 
-    echo -e "Available defconfigs:\n"
+read -p "Choose an option: " option
 
-    # List defconfigs and assign them to an array
-    local defconfigs=($(ls "$defconfig_path"))
-
-    # Display enumerated defconfigs
-    for ((i=0; i<${#defconfigs[@]}; i++)); do
-        echo -e "${LIGHTCYAN}$i: ${defconfigs[i]}${NOCOLOR}"
-    done
-
-    echo ""
-    read -p "Select the defconfig you want to process: " choice
-
-    # Check if the choice is within the range of files
-    if [ "$choice" -ge 0 ] && [ "$choice" -lt ${#defconfigs[@]} ]; then
-        DEFCONFIG="${defconfigs[choice]}"
-        echo "Selected defconfig: $DEFCONFIG"
-    else
-        echo -e "${RED}error:${NOCOLOR} Invalid choice"
-        exit 1
-    fi
-}
-
-# Jalankan fungsi compile_kernel
-compile_kernel
+case $option in
+    1) regen_defconfig ;;
+    2) open_menuconfig ;;
+    3) compile_kernel ;;
+    4) exit 0 ;;
+    *) echo -e "${RED}Invalid option.${NOCOLOR}" ;;
+esac
