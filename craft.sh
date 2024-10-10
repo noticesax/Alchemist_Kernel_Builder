@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# --- Telegram Notification Setup ---
+# Enter your Telegram Bot Token and Chat ID below:
+TELEGRAM_BOT_TOKEN="YOUR_BOT_TOKEN_HERE"  
+TELEGRAM_CHAT_ID="YOUR_CHAT_ID_HERE"
+# -----------------------------------
+
 # Define color variables
 RED='\033[0;31m'
 NOCOLOR='\033[0m'
@@ -147,12 +153,8 @@ compile_kernel() {
         # Zip the build log
         zip -r out/error.log.zip out/build.log
 
-        # Ask for Telegram bot token and chat ID
-        read -p "Enter your Telegram Bot Token: " BOT_TOKEN
-        read -p "Enter your Telegram Chat ID: " CHAT_ID
-
         # Send the zipped log to Telegram
-        curl -F "chat_id=${CHAT_ID}" -F "document=@out/error.log.zip" "https://api.telegram.org/bot${BOT_TOKEN}/sendDocument"
+        curl -F "chat_id=${TELEGRAM_CHAT_ID}" -F "document=@out/error.log.zip" "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument"
     fi
 }
 
