@@ -1,4 +1,6 @@
-# Alchemist Kernel Builder: Your ARM64 Kernel Brewery
+# Alchemist Kernel Builder
+
+🛠️ Your ARM64 Kernel Brewery
 
 Tired of generic kernels?  Want to brew your own custom Linux kernel for your ARM64 device?  Kernel Alchemist is here to help! This bash script simplifies the process of building a personalized kernel, tailored to your exact needs.
 
