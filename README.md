@@ -31,3 +31,5 @@ Tired of generic kernels?  Want to brew your own custom Linux kernel for your AR
    ```bash
    git clone https://github.com/noticesax/Alchemist_Kernel_Builder.git
    
+## Credit
+This script is inspired by Origami Kernel Builder by @rem01gaming
