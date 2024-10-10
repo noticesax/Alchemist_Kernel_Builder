@@ -23,7 +23,6 @@ KERNEL_VERSION="YOUR_KERNEL_VERSION"
 export ARCH=arm64
 export PROCS=8
 
-
 # Function to display the list of defconfigs and select one
 show_defconfigs() {
     local defconfig_path="./arch/${ARCH}/configs"
@@ -135,7 +134,7 @@ compile_kernel() {
         LD="${LINKER}" \
         AR=llvm-ar \
         AS=llvm-as \
-        NM=llvm-nm \
+        NM=objdump  # Use objdump instead of llvm-nm
         OBJDUMP=llvm-objdump \
         STRIP=llvm-strip \
         CC="clang" \
@@ -158,6 +157,11 @@ compile_kernel() {
 
         # Send the zipped log to Telegram
         curl -F "chat_id=${TELEGRAM_CHAT_ID}" -F "document=@error-${DEVICE_NAME}-${KERNEL_VERSION}.log.zip" "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument"
+    else
+        # Zip the kernel to AnyKernel3 format
+        cd out
+        zip -r9 "../AnyKernel3-${DEVICE_NAME}-${KERNEL_VERSION}.zip" * -x *.log *.txt *.o *.cmd *.symvers *.order *.dtb *Module.symvers
+        cd ..
     fi
 }
 
