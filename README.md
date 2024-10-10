@@ -5,7 +5,7 @@ Tired of generic kernels?  Want to brew your own custom Linux kernel for your AR
 ## Features
 
 * **Defconfig Discovery:**  Easily browse and select from available kernel configurations (defconfigs) or whip up your own using the interactive menuconfig. No more searching through endless files!
-* **Clang Conjuring:** Kernel Crafter automatically summons the latest Clang compiler, ensuring you have the finest tools for the job.  No manual downloads or installations needed!
+* **Clang Conjuring:** Kernel Crafter automatically summons the latest ZyC Clang 20.0.0 compiler, ensuring you have the finest tools for the job.  No manual downloads or installations needed!
 * **Defconfig Alchemy:**  Regenerate existing defconfigs or tweak them to perfection with menuconfig.  Save your concoctions and reuse them later.
 * **Telegram Telepathy:**  Get notified instantly on Telegram if your brewing process encounters any hiccups.  Debug and fix issues faster than ever before.
 * **Lightweight and Brewtiful:**  Kernel Crafter is a lean, mean, bash-scripting machine.  Easy to use, easy to customize.
