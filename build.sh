@@ -22,6 +22,9 @@ compile_kernel() {
     export CROSS_COMPILE_COMPAT="arm-linux-gnueabi-"
     export CROSS_COMPILE="aarch64-linux-gnu-"
 
+    # Meminta input defconfig
+    read -p "Masukkan defconfig (contoh: defconfig, vendor/defconfig, dll.): " DEFCONFIG
+
     make O=out ARCH=${ARCH} ${DEFCONFIG}
 
     START=$(date +"%s")
