@@ -80,7 +80,7 @@ zip_kernel() {
   # --- Generate zip file name ---
   build_date=$(date +%Y%m%d)
   build_number=$(date +%H%M)
-  zip_name="${DEVICE_NAME}-${KERNEL_VERSION}-${build_date}-${build_number}.zip"
+  zip_name="${KERNEL_VERSION}-${DEVICE_NAME}-${build_date}-${build_number}.zip"
 
   # --- Zip the kernel ---
   zip -r9 "${zip_name}" * -x .git README.md *placeholder
