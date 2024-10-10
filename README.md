@@ -33,3 +33,7 @@ Tired of generic kernels?  Want to brew your own custom Linux kernel for your AR
    
 ## Credit
 This script is inspired by Origami Kernel Builder by @rem01gaming
+
+## License
+
+This script is licensed under the GNU General Public License v3.0. Refer to the [LICENSE](LICENSE) file for more details.
