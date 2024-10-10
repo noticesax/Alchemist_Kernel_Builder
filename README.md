@@ -37,7 +37,8 @@ Tired of generic kernels?  Want to brew your own custom Linux kernel for your AR
 2. Enter this script into the kernel folder that you will build
 3. then give permission chmod 0777 craft.sh
 4. Then launch the script by typing ./craft.sh
-   
+   ```
+
 ## Credit
 This script is inspired by Origami Kernel Builder by @rem01gaming
 
