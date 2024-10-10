@@ -22,7 +22,7 @@ This bash script automates the kernel compilation process with additional featur
     -   Make sure you have the correct kernel configuration file (`DEFCONFIG`).
 2.  **Run the script:**
     ```bash
-    ./compile_kernel.sh
+    ./build.sh
     ```
 3.  **Enter Telegram information (if an error occurs):**
     -   If the script detects an error during compilation, you will be prompted to enter your Telegram bot token and chat ID.
