@@ -29,7 +29,7 @@ Tired of generic kernels?  Want to brew your own custom Linux kernel for your AR
    ```bash
 1. Clone this repository or copy the craft.sh script
 2. Enter this script into the kernel folder that you will build
-3. then give permission chmod 0777 craft.sh
+3. then give permission "chmod 0777 craft.sh"
 4. Then launch the script by typing ./craft.sh
    ```
 
