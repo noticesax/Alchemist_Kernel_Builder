@@ -20,7 +20,7 @@ Tired of generic kernels?  Want to brew your own custom Linux kernel for your AR
 
 1.  Clone this repository: `git clone https://github.com/noticesax/Alchemist_Kernel_Builder.git`
 2.  Gather your ingredients (see Prerequisites).
-3.  Fire up the script: `cd Alchemist_kernel_Builder && chmod 0777 .craft sh && ./craft.sh`
+3.  Fire up the script: `cd Alchemist_kernel_Builder && chmod 0777 .craft.sh && ./craft.sh`
 4.  Follow the on-screen instructions to select your desired defconfig and brewing options.
 
 ## Secret Recipes (Example Usage)
