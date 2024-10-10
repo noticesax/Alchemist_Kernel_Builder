@@ -2,7 +2,7 @@
 
 # --- Telegram Notification Setup ---
 # Enter your Telegram Bot Token and Chat ID below:
-TELEGRAM_BOT_TOKEN="YOUR_BOT_TOKEN_HERE"  
+TELEGRAM_BOT_TOKEN="YOUR_BOT_TOKEN_HERE"
 TELEGRAM_CHAT_ID="YOUR_CHAT_ID_HERE"
 # -----------------------------------
 
@@ -12,14 +12,17 @@ NOCOLOR='\033[0m'
 LIGHTCYAN='\033[1;36m'
 LIGHTGREEN='\033[1;32m'
 
-# Make sure ARCH, PROCS, BUILDER, BUILD_HOST, localversion, and LINKER variables are defined
+# --- Device and Kernel Version ---
+# Enter your Device Name and Kernel Version below:
+DEVICE_NAME="YOUR_DEVICE_NAME"
+KERNEL_VERSION="YOUR_KERNEL_VERSION"
+# ---------------------------------
+
+# Make sure ARCH and PROCS variables are defined
 # Example:
 export ARCH=arm64
 export PROCS=8
-export BUILDER="your_username"
-export BUILD_HOST="your_hostname"
-export localversion="-test"
-export LINKER="ld.lld"
+
 
 # Function to display the list of defconfigs and select one
 show_defconfigs() {
@@ -66,7 +69,7 @@ regen_defconfig() {
 open_menuconfig() {
     show_defconfigs
     make O=out ARCH=${ARCH} ${DEFCONFIG}
-    echo -e "${LIGHTGREEN}Note: Make sure you save the config with name '.config'"    
+    echo -e "${LIGHTGREEN}Note: Make sure you save the config with name '.config'"
     echo -e "      else the defconfig will not saved automatically.${NOCOLOR}"
 
     make O=out menuconfig
@@ -112,9 +115,9 @@ compile_kernel() {
 
     rm -rf ./out/arch/${ARCH}/boot/Image.gz-dtb 2>/dev/null
 
-    export KBUILD_BUILD_USER=${BUILDER}
-    export KBUILD_BUILD_HOST=${BUILD_HOST}
-    export LOCALVERSION=${localversion}
+    export KBUILD_BUILD_USER="${BUILDER}"
+    export KBUILD_BUILD_HOST="${BUILD_HOST}"
+    export LOCALVERSION="-${DEVICE_NAME}-${KERNEL_VERSION}"
     export CROSS_COMPILE_ARM32="arm-linux-gnueabi-"
     export CROSS_COMPILE_COMPAT="arm-linux-gnueabi-"
     export CROSS_COMPILE="aarch64-linux-gnu-"
@@ -150,11 +153,11 @@ compile_kernel() {
 
     # Check for errors in the build log
     if grep -q "error:" out/build.log; then
-        # Zip the build log
-        zip -r out/error.log.zip out/build.log
+        # Zip the build log, include device and kernel version in filename
+        zip -r "error-${DEVICE_NAME}-${KERNEL_VERSION}.log.zip" out/build.log
 
         # Send the zipped log to Telegram
-        curl -F "chat_id=${TELEGRAM_CHAT_ID}" -F "document=@out/error.log.zip" "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument"
+        curl -F "chat_id=${TELEGRAM_CHAT_ID}" -F "document=@error-${DEVICE_NAME}-${KERNEL_VERSION}.log.zip" "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument"
     fi
 }
 
