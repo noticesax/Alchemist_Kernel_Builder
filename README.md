@@ -27,3 +27,7 @@ Tired of generic kernels?  Want to brew your own custom Linux kernel for your AR
 
 ```bash
 ./craft.sh
+```
+
+## Credits
+This script is inspired by Origami Kernel Builder
