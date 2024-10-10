@@ -108,6 +108,22 @@ send_error_message() {
     -F caption="An error occurred during compilation. Please check the build log."
 }
 
+send_to_telegram() {
+  local file_path="$1"
+  curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
+    -F chat_id="${TELEGRAM_CHAT_ID}" \
+    -F document="@./out/build.log" \
+    -F caption="Build Log"
+}
+
+# --- Function to send error message to Telegram ---
+send_error_message() {
+  curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
+    -F chat_id="${TELEGRAM_CHAT_ID}" \
+    -F document="@./out/build.log" \
+    -F caption="An error occurred during compilation. Please check the build log."
+}
+
 # --- Function to send start message to Telegram ---
 send_start_message() {
   local message="
