@@ -120,7 +120,7 @@ compile_kernel() {
     export CROSS_COMPILE_ARM32="arm-linux-gnueabi-"
     export CROSS_COMPILE_COMPAT="arm-linux-gnueabi-"
     export CROSS_COMPILE="aarch64-linux-gnu-"
-    export PATH="$PATH:$(pwd)/clang/bin"
+    export PATH="${PWD}/clang/bin:${PATH}"
 
     # Call the show_defconfigs function
     show_defconfigs
@@ -134,7 +134,6 @@ compile_kernel() {
         LD="${LINKER}" \
         AR=llvm-ar \
         AS=llvm-as \
-        NM=objdump  # Use objdump instead of llvm-nm
         OBJDUMP=llvm-objdump \
         STRIP=llvm-strip \
         CC="clang" \
