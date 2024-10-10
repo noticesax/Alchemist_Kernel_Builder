@@ -77,23 +77,27 @@ zip_kernel() {
     if [ ! -f "$kernel_image" ]; then
         kernel_image="./out/arch/${ARCH}/boot/Image.gz"
     fi
+
     cp "$kernel_image" ./AnyKernel3
     cd ./AnyKernel3
 
-    # --- Membuat nama file zip ---
-    tanggalbuild=$(date +%Y%m%d)  # Format tanggal YYYYMMDD
-    nomorbuild=$(date +%H%M)     # Format nomor build HHMM
+    # --- Generate zip file name ---
+    build_date=$(date +%Y%m%d)  # Date format YYYYMMDD
+    build_number=$(date +%H%M)     # Build number format HHMM
 
-    zipn="${DEVICE_NAME}-${KERNEL_VERSION}-${tanggalbuild}-${nomorbuild}"
+    zip_name="${DEVICE_NAME}-${KERNEL_VERSION}-${build_date}-${build_number}.zip"
 
     # -----------------------------
 
-    zip -r9 "${zipn}".zip * -x .git README.md *placeholder
+    zip -r9 "${zip_name}" * -x .git README.md *placeholder
     cd ..
-    export checksum=$(sha512sum ./AnyKernel3/"${zipn}".zip | cut -f1 -d ' ')
+
+    # Calculate checksum
+    checksum=$(sha512sum ./AnyKernel3/"${zip_name}" | cut -f1 -d ' ')
+
     mkdir -p ./out/target
     rm -f ./AnyKernel3/Image.gz ./AnyKernel3/Image.gz-dtb
-    mv ./AnyKernel3/"${zipn}".zip ./out/target
+    mv ./AnyKernel3/"${zip_name}" ./out/target
 }
 # ----------------------------------
 
@@ -103,7 +107,7 @@ send_to_telegram() {
   curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
     -F chat_id="${TELEGRAM_CHAT_ID}" \
     -F document="@${file_path}" \
-    -F caption="Kernel ${DEVICE_NAME} ${KERNEL_VERSION} berhasil dikompilasi."
+    -F caption="Kernel ${DEVICE_NAME} ${KERNEL_VERSION} compiled successfully."
 }
 # ------------------------------------------
 
@@ -179,7 +183,7 @@ compile_kernel() {
     zip_kernel
 
     # Send the kernel to Telegram
-    send_to_telegram "./out/target/${zipn}.zip"
+    send_to_telegram "./out/target/${zip_name}"
 }
 
 # --- Display option menu ---
