@@ -97,7 +97,9 @@ send_to_telegram() {
   curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
     -F chat_id="${TELEGRAM_CHAT_ID}" \
     -F document="@${file_path}" \
-    -F caption="${KERNEL_VERSION} Successfully build!"
+    -F caption="${KERNEL_VERSION} Successfully build!" \
+    -o /dev/null \
+    -w "" >/dev/null 2>&1
 }
 
 send_log_telegram() {
@@ -105,7 +107,9 @@ send_log_telegram() {
   curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
     -F chat_id="${TELEGRAM_CHAT_ID}" \
     -F document="@./out/build.log" \
-    -F caption="Build Log"
+    -F caption="Build Log" \
+    -o /dev/null \
+    -w "" >/dev/null 2>&1
 }
 
 # --- Function to send error message to Telegram ---
@@ -113,7 +117,9 @@ send_error_message() {
   curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
     -F chat_id="${TELEGRAM_CHAT_ID}" \
     -F document="@./out/build.log" \
-    -F caption="An error occurred during compilation. Please check the build log."
+    -F caption="An error occurred during compilation. Please check the build log." \
+    -o /dev/null \
+    -w "" >/dev/null 2>&1
 }
 
 # --- Function to send start message to Telegram ---
