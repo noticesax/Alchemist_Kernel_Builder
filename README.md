@@ -29,5 +29,5 @@ Tired of generic kernels?  Want to brew your own custom Linux kernel for your AR
 
 1. **Clone the Repository:**
    ```bash
-   git clone [https://github.com/noticesax/Alchemist_Kernel_Builder.git](https://github.com/noticesax/Alchemist_Kernel_Builder.git)
+   git clone https://github.com/noticesax/Alchemist_Kernel_Builder.git
    
