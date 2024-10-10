@@ -30,4 +30,4 @@ Tired of generic kernels?  Want to brew your own custom Linux kernel for your AR
 ```
 
 ## Credits
-This script is inspired by Origami Kernel Builder
+This script is inspired by Origami Kernel Builder aka @rem01Gaming
