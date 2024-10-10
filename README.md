@@ -26,12 +26,6 @@ Tired of generic kernels?  Want to brew your own custom Linux kernel for your AR
     * **`LINKER`**: The linker to use (set to `ld.lld` by default).
 
 ## Brewing Instructions
-
-1. **Clone the Repository:**
-   ```bash
-   git clone https://github.com/noticesax/Alchemist_Kernel_Builder.git
-
-## Usage
    ```bash
 1. Clone this repository or copy the craft.sh script
 2. Enter this script into the kernel folder that you will build
