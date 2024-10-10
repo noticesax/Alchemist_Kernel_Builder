@@ -1,126 +1,133 @@
 #!/bin/bash
 
-# --- Telegram Notification Setup ---
-# Enter your Telegram Bot Token and Chat ID below:
+# --- User Configuration ---
 TELEGRAM_BOT_TOKEN="YOUR_BOT_TOKEN_HERE"
 TELEGRAM_CHAT_ID="YOUR_CHAT_ID_HERE"
-# -----------------------------------
+DEVICE_NAME="YOUR_DEVICE_NAME"
+KERNEL_VERSION="YOUR_KERNEL_VERSION"
+# --------------------------
 
-# Define color variables
+# --- Script Configuration ---
+ARCH=arm64
+PROCS=8
+LINKER="ld.lld"
+# --------------------------
+
+# --- Check for empty variables ---
+if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ] || [ -z "$DEVICE_NAME" ] || [ -z "$KERNEL_VERSION" ]; then
+  echo -e "${RED}Error: Please fill all required variables at the beginning of the script.${NOCOLOR}"
+  exit 1
+fi
+# --------------------------------
+
+# --- Color Variables ---
 RED='\033[0;31m'
 NOCOLOR='\033[0m'
 LIGHTCYAN='\033[1;36m'
 LIGHTGREEN='\033[1;32m'
+# ----------------------
 
-# --- Device and Kernel Version ---
-# Enter your Device Name and Kernel Version below:
-DEVICE_NAME="YOUR_DEVICE_NAME"
-KERNEL_VERSION="YOUR_KERNEL_VERSION"
-# ---------------------------------
-
-# Make sure ARCH and PROCS variables are defined
-# Example:
-export ARCH=arm64
-export PROCS=8
-
-# Function to display the list of defconfigs and select one
+# --- Function to display and select defconfig ---
 show_defconfigs() {
     local defconfig_path="./arch/${ARCH}/configs"
-
-    # Check if folder exists
     if [ ! -d "$defconfig_path" ]; then
-        echo -e "${RED}FATAL:${NOCOLOR} Seems not a valid Kernel linux"
+        echo -e "${RED}FATAL:${NOCOLOR} Invalid Kernel directory."
         exit 2
     fi
-
     echo -e "Available defconfigs:\n"
-
-    # List defconfigs and assign them to an array
     local defconfigs=($(ls "$defconfig_path"))
-
-    # Display enumerated defconfigs
     for ((i=0; i<${#defconfigs[@]}; i++)); do
         echo -e "${LIGHTCYAN}$i: ${defconfigs[i]}${NOCOLOR}"
     done
-
     echo ""
-    read -p "Select the defconfig you want to process: " choice
-
-    # Check if the choice is within the range of files
+    read -p "Select the defconfig: " choice
     if [ "$choice" -ge 0 ] && [ "$choice" -lt ${#defconfigs[@]} ]; then
         DEFCONFIG="${defconfigs[choice]}"
         echo "Selected defconfig: $DEFCONFIG"
     else
-        echo -e "${RED}error:${NOCOLOR} Invalid choice"
+        echo -e "${RED}Error:${NOCOLOR} Invalid choice."
         exit 1
     fi
 }
+# -----------------------------------------------
 
-# Function to regenerate defconfig
+# --- Function to regenerate defconfig ---
 regen_defconfig() {
     show_defconfigs
     make O=out ARCH=${ARCH} ${DEFCONFIG}
     cp -rf ./out/.config ./arch/${ARCH}/configs/${DEFCONFIG}
-    echo -e "${LIGHTGREEN}Defconfig ${DEFCONFIG} successfully regenerated.${NOCOLOR}"
+    echo -e "${LIGHTGREEN}Defconfig ${DEFCONFIG} regenerated.${NOCOLOR}"
 }
+# ------------------------------------------
 
-# Function to open menuconfig and save defconfig
+# --- Function to open menuconfig and save defconfig ---
 open_menuconfig() {
     show_defconfigs
     make O=out ARCH=${ARCH} ${DEFCONFIG}
-    echo -e "${LIGHTGREEN}Note: Make sure you save the config with name '.config'"
-    echo -e "      else the defconfig will not saved automatically.${NOCOLOR}"
-
+    echo -e "${LIGHTGREEN}Note: Save the config with name '.config'.${NOCOLOR}"
     make O=out menuconfig
     cp -rf ./out/.config ./arch/${ARCH}/configs/${DEFCONFIG}
-    echo -e "${LIGHTGREEN}Defconfig ${DEFCONFIG} successfully saved.${NOCOLOR}"
+    echo -e "${LIGHTGREEN}Defconfig ${DEFCONFIG} saved.${NOCOLOR}"
 }
+# -----------------------------------------------------
 
-# Function to compile the kernel
+# --- Function to zip the kernel ---
+zip_kernel() {
+    local kernel_image="./out/arch/${ARCH}/boot/Image.gz-dtb"
+    if [ ! -f "$kernel_image" ]; then
+        kernel_image="./out/arch/${ARCH}/boot/Image.gz"
+    fi
+    cp "$kernel_image" ./AnyKernel3
+    cd ./AnyKernel3
+    zip -r9 "${zipn}".zip * -x .git README.md *placeholder
+    cd ..
+    export checksum=$(sha512sum ./AnyKernel3/"${zipn}".zip | cut -f1 -d ' ')
+    mkdir -p ./out/target
+    rm -f ./AnyKernel3/Image.gz ./AnyKernel3/Image.gz-dtb
+    mv ./AnyKernel3/${zipn}".zip" ./out/target
+}
+# ----------------------------------
+
+# --- Function to compile the kernel ---
 compile_kernel() {
-    # Check if necessary packages are installed
-    if ! command -v bc &> /dev/null; then
-        sudo apt-get update && sudo apt-get install -y bc
-    fi
-    if ! command -v curl &> /dev/null; then
-        sudo apt-get update && sudo apt-get install -y curl
-    fi
-    if ! command -v make &> /dev/null; then
-        sudo apt-get update && sudo apt-get install -y make
-    fi
-    if ! command -v zip &> /dev/null; then
-        sudo apt-get update && sudo apt-get install -y zip
-    fi
-    if ! command -v wget &> /dev/null; then
-        sudo apt-get update && sudo apt-get install -y wget
-    fi
+    # Install necessary packages
+    for pkg in bc curl make zip wget git; do
+        if ! command -v "$pkg" &> /dev/null; then
+            sudo apt-get update && sudo apt-get install -y "$pkg"
+        fi
+    done
 
-    # Check if clang folder exists
+    # Clone Clang if not exists
     if [ ! -d "${PWD}/clang" ]; then
         echo "Cloning clang..."
-
-        # Get the latest release URL
         latest_release_url=$(curl -s "https://api.github.com/repos/ZyCromerZ/Clang/releases/latest" | grep '"browser_download_url":' | cut -d '"' -f 4)
-
-        # Download the latest release assets
         wget "$latest_release_url" -O "clang.tar.gz"
-
-        # Extract archive and clean it
         rm -rf clang && mkdir clang && tar -xvf clang.tar.gz -C clang && rm -rf clang.tar.gz
         echo "clang cloned!"
     else
         echo "The clang folder already exists."
     fi
 
+    # Clone AnyKernel3 if not exists
+    if [ ! -d "AnyKernel3" ]; then
+        echo "AnyKernel3 folder not found."
+        read -p "Enter the AnyKernel3 repository URL: " ANYKERNEL_URL
+        git clone "$ANYKERNEL_URL" AnyKernel3
+        echo "AnyKernel3 cloned!"
+    else
+        echo "AnyKernel3 folder already exists."
+    fi
+
     rm -rf ./out/arch/${ARCH}/boot/Image.gz-dtb 2>/dev/null
 
+    # Set environment variables
     export KBUILD_BUILD_USER="${BUILDER}"
     export KBUILD_BUILD_HOST="${BUILD_HOST}"
     export LOCALVERSION="-${DEVICE_NAME}-${KERNEL_VERSION}"
     export CROSS_COMPILE_ARM32="arm-linux-gnueabi-"
     export CROSS_COMPILE_COMPAT="arm-linux-gnueabi-"
     export CROSS_COMPILE="aarch64-linux-gnu-"
-    export PATH="${PWD}/clang/bin:${PATH}"
+    export PATH="$PATH:$(pwd)/clang/bin"
 
     # Call the show_defconfigs function
     show_defconfigs
@@ -134,6 +141,7 @@ compile_kernel() {
         LD="${LINKER}" \
         AR=llvm-ar \
         AS=llvm-as \
+        NM=objdump \
         OBJDUMP=llvm-objdump \
         STRIP=llvm-strip \
         CC="clang" \
@@ -151,20 +159,17 @@ compile_kernel() {
 
     # Check for errors in the build log
     if grep -q "error:" out/build.log; then
-        # Zip the build log, include device and kernel version in filename
-        zip -r "error-${DEVICE_NAME}-${KERNEL_VERSION}.log.zip" out/build.log
-
-        # Send the zipped log to Telegram
-        curl -F "chat_id=${TELEGRAM_CHAT_ID}" -F "document=@error-${DEVICE_NAME}-${KERNEL_VERSION}.log.zip" "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument"
+        # Send notification to Telegram
+        curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d "chat_id=${TELEGRAM_CHAT_ID}" \
+            -d "text=Kernel compilation failed for ${DEVICE_NAME} ${KERNEL_VERSION}. Check the build log for details."
     else
-        # Zip the kernel to AnyKernel3 format
-        cd out
-        zip -r9 "../AnyKernel3-${DEVICE_NAME}-${KERNEL_VERSION}.zip" * -x *.log *.txt *.o *.cmd *.symvers *.order *.dtb *Module.symvers
-        cd ..
+        # Zip the kernel
+        zip_kernel
     fi
 }
 
-# Display option menu
+# --- Display option menu ---
 echo -e "
 ${LIGHTCYAN}Kernel Build Script${NOCOLOR}
 
