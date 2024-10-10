@@ -11,6 +11,7 @@ KERNEL_VERSION=""
 ARCH=arm64
 PROCS=8
 LINKER=ld.lld
+zipn="${DEVICE_NAME}-${KERNEL_VERSION}" # Nama file zip
 # --------------------------
 
 # --- Check for empty variables ---
@@ -84,9 +85,19 @@ zip_kernel() {
     export checksum=$(sha512sum ./AnyKernel3/"${zipn}".zip | cut -f1 -d ' ')
     mkdir -p ./out/target
     rm -f ./AnyKernel3/Image.gz ./AnyKernel3/Image.gz-dtb
-    mv ./AnyKernel3/${zipn}".zip" ./out/target
+    mv ./AnyKernel3/"${zipn}".zip ./out/target
 }
 # ----------------------------------
+
+# --- Function to send file to Telegram ---
+send_to_telegram() {
+  local file_path="$1"
+  curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
+    -F chat_id="${TELEGRAM_CHAT_ID}" \
+    -F document="@${file_path}" \
+    -F caption="Kernel ${DEVICE_NAME} ${KERNEL_VERSION} berhasil dikompilasi."
+}
+# ------------------------------------------
 
 # --- Function to compile the kernel ---
 compile_kernel() {
@@ -156,16 +167,11 @@ compile_kernel() {
     export minutes=$((DIFF / 60))
     export seconds=$((DIFF % 60))
 
-    # Check for errors in the build log
-    if grep -q "error:" out/build.log; then
-        # Send notification to Telegram
-        curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-            -d "chat_id=${TELEGRAM_CHAT_ID}" \
-            -d "text=Kernel compilation failed for ${DEVICE_NAME} ${KERNEL_VERSION}. Check the build log for details."
-    else
-        # Zip the kernel
-        zip_kernel
-    fi
+    # Zip the kernel
+    zip_kernel
+
+    # Send the kernel to Telegram
+    send_to_telegram "./out/target/${zipn}.zip"
 }
 
 # --- Display option menu ---
