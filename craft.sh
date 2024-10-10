@@ -108,6 +108,16 @@ send_error_message() {
     -F caption="An error occurred during compilation. Please check the build log."
 }
 
+# --- Function to send start message to Telegram ---
+send_start_message() {
+  local message="
+  Kernel compilation started for ${DEVICE_NAME} with version ${KERNEL_VERSION}.
+  "
+  curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+    -d chat_id="${TELEGRAM_CHAT_ID}" \
+    -d text="${message}"
+}
+
 # --- Function to compile the kernel ---
 compile_kernel() {
   # Install necessary packages
@@ -153,6 +163,9 @@ compile_kernel() {
   show_defconfigs
 
   make O=out ARCH=${ARCH} ${DEFCONFIG}
+
+  # Send start message to Telegram
+  send_start_message
 
   START=$(date +"%s")
 
