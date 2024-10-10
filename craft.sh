@@ -10,7 +10,7 @@ KERNEL_VERSION=""
 # --- Script Configuration ---
 ARCH=arm64
 PROCS=8
-LINKER="ld.lld"
+LINKER=ld.lld
 # --------------------------
 
 # --- Check for empty variables ---
