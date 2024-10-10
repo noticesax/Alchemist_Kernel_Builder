@@ -107,7 +107,7 @@ send_to_telegram() {
   curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
     -F chat_id="${TELEGRAM_CHAT_ID}" \
     -F document="@${file_path}" \
-    -F caption="Kernel ${DEVICE_NAME} ${KERNEL_VERSION} compiled successfully."
+    -F caption="${KERNEL_VERSION} Successfully build!"
 }
 # ------------------------------------------
 
