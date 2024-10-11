@@ -80,7 +80,7 @@ zip_kernel() {
   # --- Generate zip file name ---
   build_date=$(date +%Y%m%d)
   build_number=$(date +%H%M)
-  zip_name="${KERNEL_VERSION}-${DEVICE_NAME}-${build_date}-${build_number}.zip"
+  zip_name="${KERNEL_VERSION}-${DEVICE_NAME}-${build_date}.zip"
 
   # --- Zip the kernel ---
   zip -r9 "${zip_name}" * -x .git README.md *placeholder
@@ -125,7 +125,7 @@ send_error_message() {
 # --- Function to send start message to Telegram ---
 send_start_message() {
   local message="
-  Kernel compilation started for ${DEVICE_NAME} with version ${KERNEL_VERSION}.
+  Build started for ${DEVICE_NAME} ${KERNEL_VERSION} ${build_date}.
   "
   curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
     -d chat_id="${TELEGRAM_CHAT_ID}" \
@@ -222,20 +222,20 @@ compile_kernel() {
 
 # --- Display option menu ---
 echo -e "
-${LIGHTCYAN}Kernel Build Script${NOCOLOR}
+${LIGHTCYAN}Alchemist Kernel Builder${NOCOLOR}
 
-1. Regenerate defconfig
+1. Build Kernel
 2. Open menuconfig
-3. Compile kernel
+3. Regenerate defconfig
 4. Exit
 "
 
 read -p "Choose an option: " option
 
 case $option in
-  1) regen_defconfig ;;
+  1) compile_kernel ;;
   2) open_menuconfig ;;
-  3) compile_kernel ;;
+  3) regen_defconfig ;;
   4) exit 0 ;;
   *) echo -e "${RED}Invalid option.${NOCOLOR}" ;;
 esac
