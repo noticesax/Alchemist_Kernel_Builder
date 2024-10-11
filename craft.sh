@@ -5,6 +5,10 @@ TELEGRAM_BOT_TOKEN="" # Your Bot Token from BotFather
 TELEGRAM_CHAT_ID="" # Your Group Chat ID
 DEVICE_NAME="" # Your Device Codename, ex: merlinx, lancelot
 KERNEL_VERSION="" # Your Kernel Name, ex: Fearless, Atomic
+BUILDER="" # Your Name, ex: äerichāndesu
+BUILDER_HOST="" # Your Hostname, ex: noticesa
+BRANCH="$(git rev-parse --abbrev-ref HEAD)" # Do not Edit!
+
 # --------------------------
 
 # --- Script Configuration ---
@@ -124,15 +128,24 @@ send_error_message() {
 
 # --- Function to send start message to Telegram ---
 send_start_message() {
-  local message="
-  Build started for ${DEVICE_NAME} ${KERNEL_VERSION} ${build_date}.
+  local build_date=$(date +"%Y-%m-%d %H:%M:%S")
+  local message="Build started!
+
+Device: ${DEVICE_NAME}
+Kernel Version: ${KERNEL_VERSION}
+Build Date: ${build_date}
+Builder Host: ${BUILDER_HOST}
+Builder: ${BUILDER}
+Defconfig: ${DEFCONFIG}
+Branch: ${BRANCH}
   "
   curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
     -d chat_id="${TELEGRAM_CHAT_ID}" \
     -d text="${message}" \
     -o /dev/null \
-     -w "" >/dev/null 2>&1
+    -w "" >/dev/null 2>&1
 }
+
 
 # --- Function to compile the kernel ---
 compile_kernel() {
@@ -222,20 +235,20 @@ compile_kernel() {
 
 # --- Display option menu ---
 echo -e "
-${LIGHTCYAN}Alchemist Kernel Builder${NOCOLOR}
+${LIGHTCYAN}Kernel Build Script${NOCOLOR}
 
-1. Build Kernel
+1. Regenerate defconfig
 2. Open menuconfig
-3. Regenerate defconfig
+3. Compile kernel
 4. Exit
 "
 
 read -p "Choose an option: " option
 
 case $option in
-  1) compile_kernel ;;
+  1) regen_defconfig ;;
   2) open_menuconfig ;;
-  3) regen_defconfig ;;
+  3) compile_kernel ;;
   4) exit 0 ;;
   *) echo -e "${RED}Invalid option.${NOCOLOR}" ;;
 esac
