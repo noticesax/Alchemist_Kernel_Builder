@@ -1,12 +1,13 @@
 #!/bin/bash
 
 # --- User Configuration ---
-TELEGRAM_BOT_TOKEN="" # Your Bot Token from BotFather
-TELEGRAM_CHAT_ID="" # Your Group Chat ID
-DEVICE_NAME="" # Your Device Codename, ex: merlinx, lancelot
-KERNEL_VERSION="" # Your Kernel Name, ex: Fearless, Atomic
-BUILDER="" # Your Name, ex: äerichāndesu
-BUILDER_HOST="" # Your Hostname, ex: noticesa
+export TELEGRAM_BOT_TOKEN="" # Your Bot Token from BotFather
+export TELEGRAM_CHAT_ID="" # Your Group Chat ID
+export DEVICE_NAME="" # Your Device Codename, ex: merlinx, lancelot
+export KERNEL_VERSION="" # Your Kernel Name, ex: Fearless, Atomic
+export BUILDER="" # Your Name, ex: äerichāndesu
+export BUILDER_HOST="" # Your Hostname, ex: noticesa
+export CLANG_VERSION=$(./clang/bin/clang -v 2>&1 | head -n 1 | sed 's/(https..*//' | sed 's/ version//') # Do not Edit!
 BRANCH="$(git rev-parse --abbrev-ref HEAD)" # Do not Edit!
 
 # --------------------------
@@ -101,7 +102,7 @@ send_to_telegram() {
   curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
     -F chat_id="${TELEGRAM_CHAT_ID}" \
     -F document="@${file_path}" \
-    -F caption="${KERNEL_VERSION} Successfully build!" \
+    -F caption="${KERNEL_VERSION} Successfully build! ${minutes}m & ${seconds}s" \
     -o /dev/null \
     -w "" >/dev/null 2>&1
 }
@@ -137,6 +138,7 @@ Build Date: ${build_date}
 Builder Host: ${BUILDER_HOST}
 Builder: ${BUILDER}
 Defconfig: ${DEFCONFIG}
+Compiler: ${CLANG_VERSION}
 Branch: ${BRANCH}
   "
   curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
@@ -181,8 +183,7 @@ compile_kernel() {
 
   # Set environment variables
   export KBUILD_BUILD_USER="${BUILDER}"
-  export KBUILD_BUILD_HOST="${BUILD_HOST}"
-  export LOCALVERSION="-${DEVICE_NAME}-${KERNEL_VERSION}"
+  export KBUILD_BUILD_HOST="${BUILDER_HOST}"
   export CROSS_COMPILE_ARM32="arm-linux-gnueabi-"
   export CROSS_COMPILE_COMPAT="arm-linux-gnueabi-"
   export CROSS_COMPILE="aarch64-linux-gnu-"
