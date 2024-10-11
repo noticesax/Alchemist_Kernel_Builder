@@ -13,9 +13,9 @@ BRANCH="$(git rev-parse --abbrev-ref HEAD)" # Do not Edit!
 # --------------------------
 
 # --- Script Configuration ---
-ARCH=arm64
-PROCS=8
-LINKER=ld.lld
+ARCH=arm64 # Arch Model
+PROCS=16 # The number of cpu cores you are using
+LINKER=ld.lld # Default is ld.lld
 # --------------------------
 
 # --- Color Variables ---
